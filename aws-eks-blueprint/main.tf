@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    bcrypt = {
+      source  = "viktorradnai/bcrypt"
+      version = "0.1.2"
+    }
+  }
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -28,9 +37,7 @@ provider "helm" {
   }
 }
 
-provider "bcrypt" {
-  source = "hashicorp/bcrypt"
-}
+provider "bcrypt" {}
 
 data "aws_availability_zones" "available" {}
 
