@@ -28,7 +28,9 @@ provider "helm" {
   }
 }
 
-provider "bcrypt" {}
+provider "bcrypt" {
+  source = "hashicorp/bcrypt"
+}
 
 data "aws_availability_zones" "available" {}
 
