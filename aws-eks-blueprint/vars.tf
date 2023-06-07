@@ -27,28 +27,28 @@ variable "cluster_endpoint_public_access" {
 variable "resource_tags" {
   description = "Tags to set for all resources"
   type        = map(string)
-  default     = {
+  default = {
     project     = "project-alpha",
     environment = "dev"
   }
 }
 
 variable "instance_types" {
-  type = list(string)
-   default     = ["m5.large"]
+  type    = list(string)
+  default = ["m5.large"]
 }
 
 variable "managed_node_min_size" {
-  type = number
-   default     = 3
+  type    = number
+  default = 3
 }
 
 variable "managed_node_max_size" {
-  type = number
-   default     = 5
+  type    = number
+  default = 5
 }
 
 variable "managed_node_desired_size" {
-  type = number
-   default     = 3
+  type    = number
+  default = 3
 }
