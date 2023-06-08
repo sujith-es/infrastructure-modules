@@ -7,6 +7,8 @@ terraform {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -58,7 +60,7 @@ locals {
 #tfsec:ignore:aws-eks-enable-control-plane-logging
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "~> 19.13"
+  version = "~> 19.15"
 
   cluster_name                   = local.name
   cluster_version                = var.eks_cluster_version
@@ -78,11 +80,34 @@ module "eks" {
     initial = {
       instance_types = var.instance_types
 
-      min_size     = 3
-      max_size     = 10
-      desired_size = 5
+      min_size     = var.managed_node_min_size
+      max_size     = var.managed_node_max_size
+      desired_size = var.managed_node_desired_size
     }
   }
+
+  manage_aws_auth_configmap = true
+  aws_auth_roles = flatten([
+    module.eks_blueprints_admin_team.aws_auth_configmap_role
+  ])
+
+  tags = local.tags
+}
+
+################################################################################
+# EKS Blueprints Teams
+################################################################################
+
+module "eks_blueprints_admin_team" {
+  source  = "aws-ia/eks-blueprints-teams/aws"
+  version = "~> 1.0"
+
+  name = var.admin_team_name
+
+  enable_admin      = true
+  users             = var.admin_team_users_arn
+  cluster_arn       = module.eks.cluster_arn
+  oidc_provider_arn = module.eks.oidc_provider_arn
 
   tags = local.tags
 }
@@ -102,7 +127,7 @@ module "eks_blueprints_addons" {
   eks_oidc_provider     = module.eks.oidc_provider
   eks_oidc_provider_arn = module.eks.oidc_provider_arn
 
-  enable_argocd = true
+  enable_argocd = var.enable_argocd
   # This example shows how to set default ArgoCD Admin Password using SecretsManager with Helm Chart set_sensitive values.
   argocd_helm_config = {
     set_sensitive = [
@@ -113,7 +138,7 @@ module "eks_blueprints_addons" {
     ]
   }
 
-  argocd_manage_add_ons = true # Indicates that ArgoCD is responsible for managing/deploying add-ons
+  argocd_manage_add_ons = var.enable_argocd # Indicates that ArgoCD is responsible for managing/deploying add-ons
   argocd_applications = {
     addons = {
       path               = "chart"
@@ -131,9 +156,9 @@ module "eks_blueprints_addons" {
   enable_amazon_eks_aws_ebs_csi_driver = true
   enable_aws_load_balancer_controller  = true
   enable_cert_manager                  = true
-  enable_karpenter                     = true
+  enable_karpenter                     = var.enable_karpenter
   enable_metrics_server                = true
-  enable_argo_rollouts                 = true
+  enable_argo_rollouts                 = var.enable_argo_rollouts
 
   tags = local.tags
 }

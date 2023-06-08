@@ -52,3 +52,35 @@ variable "managed_node_desired_size" {
   type    = number
   default = 3
 }
+
+variable "admin_team_users_arn" {
+  type    = list(string)
+  default = [""]
+}
+
+variable "admin_team_name" {
+  description = "The EKS cluster version"
+  type        = string
+  default     = "pace-eks-admin-team"
+}
+
+################################################################################
+# EKS Blueprint Add-Ons
+################################################################################
+variable "enable_argocd" {
+  description = "If true, enables argocd"
+  type        = bool
+  default     = false
+}
+
+variable "enable_karpenter" {
+  description = "If ture enable karpenter"
+  type        = bool
+  default     = false
+}
+
+variable "enable_argo_rollouts" {
+  description = "If ture enable argo_rollouts"
+  type        = bool
+  default     = false
+}
